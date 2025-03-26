@@ -24,6 +24,8 @@
     <assertj.version>3.26.0</assertj.version>
     <maven-checkstyle.version>3.1.2</maven-checkstyle.version>
     <maven-pmd.version>3.14.0</maven-pmd.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
   </properties>
 
   <licenses>
