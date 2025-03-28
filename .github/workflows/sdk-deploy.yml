@@ -7,10 +7,10 @@ env:
 on:
   push:
     branches: 
-      - x
+      - main
   pull_request:
     branches: 
-      - x
+      - main
 
 jobs:
   build-and-publish:
