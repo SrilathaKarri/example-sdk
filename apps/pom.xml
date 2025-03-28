@@ -9,7 +9,7 @@
   <!--  <packaging>jar</packaging>-->
   <groupId>com.srilathakarri</groupId>
   <artifactId>exampl-sdk</artifactId>
-  <version>1.0.3</version>
+  <version>1.0.1</version>
 
   <distributionManagement>
     <repository>
@@ -18,6 +18,14 @@
       <url>https://maven.pkg.github.com/srilathakarri/exampl-sdk</url>
     </repository>
   </distributionManagement>
+
+  <repositories>
+    <repository>
+      <id>github</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/srilathaKarri/exampl-sdk</url>
+    </repository>
+  </repositories>
 
   <scm>
     <connection>scm:git:https://github.com/achalahealth/ehrsdk.git</connection>
