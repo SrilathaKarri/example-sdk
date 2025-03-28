@@ -15,7 +15,7 @@
     <repository>
       <id>github</id>
       <name>GitHub Achala Health Apache Maven Packages</name>
-      <url>https://maven.pkg.github.com/SrilathakKarri/exampl-sdk</url>
+      <url>https://maven.pkg.github.com/SrilathaKarri/exampl-sdk</url>
     </repository>
   </distributionManagement>
 
