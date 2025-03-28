@@ -1,14 +1,16 @@
 name: SDK Build, Test, and Publish
+
 env:
-  GITHUB_TOKEN: ${{ secrets.TOKEN }}
-  GITHUB_ACTOR: ${{ secrets.ACTOR }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  GITHUB_ACTOR: ${{ github.actor }}
+
 on:
   push:
     branches: 
-      - X
+      - main
   pull_request:
     branches: 
-      - X
+      - main
 
 jobs:
   build-and-publish:
@@ -30,8 +32,8 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+        server-id: github
+        settings-path: ${{ github.workspace }}/.github/workflows
 
     # Configure Git User
     - name: Configure Git User
@@ -47,7 +49,7 @@ jobs:
         LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
         
         # Extract major, minor, patch
-        MAJOR=$(echo $LATEST_TAG | cut -d. -f1)
+        MAJOR=$(echo $LATEST_TAG | cut -d. -f1 | sed 's/^v//')
         MINOR=$(echo $LATEST_TAG | cut -d. -f2)
         PATCH=$(echo $LATEST_TAG | cut -d. -f3)
         
@@ -61,18 +63,23 @@ jobs:
     # Update POM Version
     - name: Update POM Version
       run: |
+        cd apps
         mvn versions:set -DnewVersion=${{ steps.versioning.outputs.version }}
         mvn versions:commit
 
     # Build and Test
     - name: Build with Maven
-      run: mvn clean package test
+      run: |
+        cd apps
+        mvn clean package test
 
     # Publish to GitHub Packages
     - name: Publish to GitHub Packages
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: mvn deploy -s $GITHUB_WORKSPACE/settings.xml
+      run: |
+        cd apps
+        mvn deploy -s ${{ github.workspace }}/.github/workflows/settings.xml
 
     # Create GitHub Release
     - name: Create GitHub Release
@@ -80,8 +87,8 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       uses: ncipollo/release-action@v1
       with:
-        tag: ${{ steps.versioning.outputs.version }}
-        name: Release ${{ steps.versioning.outputs.version }}
+        tag: v${{ steps.versioning.outputs.version }}
+        name: Release v${{ steps.versioning.outputs.version }}
         body: |
           Automated SDK release
           - Automatic version increment
@@ -92,6 +99,9 @@ jobs:
     # Commit version changes back to repository
     - name: Commit Version Changes
       run: |
+        git config --global user.name 'GitHub Actions Bot'
+        git config --global user.email '<>'
+        cd apps
         git add pom.xml
         git commit -m "Bump version to ${{ steps.versioning.outputs.version }}"
-        git push
+        git push origin main
