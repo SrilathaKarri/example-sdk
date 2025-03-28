@@ -3,17 +3,42 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>sdk</groupId>
-  <artifactId>apps</artifactId>
-  <version>1.0-SNAPSHOT</version>
-  <packaging>jar</packaging>
+  <!--  <groupId>sdk</groupId>-->
+  <!--  <artifactId>apps</artifactId>-->
+  <!--  <version>1.0-SNAPSHOT</version>-->
+  <!--  <packaging>jar</packaging>-->
+  <groupId>com.srilathakarri</groupId>
+  <artifactId>exampl-sdk</artifactId>
+  <version>1.0.0</version>
+
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <name>GitHub Achala Health Apache Maven Packages</name>
+      <url>https://maven.pkg.github.com/srilathakarri/exampl-sdk</url>
+    </repository>
+  </distributionManagement>
+
+  <scm>
+    <connection>scm:git:https://github.com/achalahealth/ehrsdk.git</connection>
+    <developerConnection>scm:git:https://github.com/SrilathaKarri/exampl-sdk</developerConnection>
+    <url>https://github.com/srilathakarri/exampl-sdk</url>
+  </scm>
+
+  <developers>
+    <developer>
+      <name>Srilatha Karri</name>
+      <email>srilatha.karri@achalasolutions.com</email>
+      <organization>Achala Health</organization>
+    </developer>
+  </developers>
 
   <name>Patient SDK</name>
   <description>SDK for interacting with the Patient service.</description>
   <url>https://github.com/SrilathaKarri/exampl-sdk</url>
 
   <properties>
-    <java.version>21</java.version>
+    <java.version>17</java.version>
     <spring-boot.version>3.2.5</spring-boot.version>
     <jackson.version>2.16.0</jackson.version>
     <lombok.version>1.18.36</lombok.version>
@@ -24,31 +49,9 @@
     <assertj.version>3.26.0</assertj.version>
     <maven-checkstyle.version>3.1.2</maven-checkstyle.version>
     <maven-pmd.version>3.14.0</maven-pmd.version>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
   </properties>
-
-  <licenses>
-    <license>
-      <name>MIT License</name>
-      <url>https://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
-
-  <developers>
-    <developer>
-      <name>Srilatha Karri</name>
-      <email>srilatha.karri@achalasolutions.com</email>
-      <organization>xxx</organization>
-      <organizationUrl>https://github.com/SrilathaKarri/exampl-sdk</organizationUrl>
-    </developer>
-  </developers>
-
-  <scm>
-    <connection>scm:git:git://github.com/SrilathaKarri/exampl-sdk</connection>
-    <developerConnection>scm:git:ssh://github.com/SrilathaKarri/exampl-sdk</developerConnection>
-    <url>https://github.com/SrilathaKarri/exampl-sdk</url>
-  </scm>
 
   <dependencies>
     <!-- Spring Boot WebFlux -->
@@ -138,12 +141,12 @@
       <version>${reactor-test.version}</version>
       <scope>test</scope>
     </dependency>
-      <dependency>
-          <groupId>org.jetbrains</groupId>
-          <artifactId>annotations</artifactId>
-          <version>24.0.1</version>
-          <scope>compile</scope>
-      </dependency>
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <version>24.0.1</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -186,14 +189,35 @@
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-release-plugin</artifactId>
-        <version>3.0.0-M7</version>
-        <configuration>
-          <autoVersionSubmodules>true</autoVersionSubmodules>
-          <tagNameFormat>v@{project.version}</tagNameFormat>
-          <generateReleasePoms>false</generateReleasePoms>
-        </configuration>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
+
+      <!--      <plugin>-->
+      <!--        <groupId>org.apache.maven.plugins</groupId>-->
+      <!--        <artifactId>maven-javadoc-plugin</artifactId>-->
+      <!--        <version>3.3.0</version>-->
+      <!--        <executions>-->
+      <!--          <execution>-->
+      <!--            <id>attach-javadocs</id>-->
+      <!--            <goals>-->
+      <!--              <goal>jar</goal>-->
+      <!--            </goals>-->
+      <!--          </execution>-->
+      <!--        </executions>-->
+      <!--      </plugin>-->
+
+
     </plugins>
+
+
   </build>
 </project>
