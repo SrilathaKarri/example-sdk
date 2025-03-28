@@ -15,7 +15,7 @@
     <repository>
       <id>github</id>
       <name>GitHub Achala Health Apache Maven Packages</name>
-      <url>https://maven.pkg.github.com/srilathakarri/exampl-sdk</url>
+      <url>https://maven.pkg.github.com/SrilathakKarri/exampl-sdk</url>
     </repository>
   </distributionManagement>
 
@@ -23,14 +23,14 @@
     <repository>
       <id>github</id>
       <name>GitHub Packages</name>
-      <url>https://maven.pkg.github.com/srilathaKarri/exampl-sdk</url>
+      <url>https://maven.pkg.github.com/SrilathaKarri/exampl-sdk</url>
     </repository>
   </repositories>
 
   <scm>
-    <connection>scm:git:https://github.com/achalahealth/ehrsdk.git</connection>
+    <connection>scm:git:https://github.com/SrilathaKarri/ehrsdk.git</connection>
     <developerConnection>scm:git:https://github.com/SrilathaKarri/exampl-sdk</developerConnection>
-    <url>https://github.com/srilathakarri/exampl-sdk</url>
+    <url>https://github.com/SrilathaKarri/exampl-sdk</url>
   </scm>
 
   <developers>
