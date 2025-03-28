@@ -1,12 +1,14 @@
 name: SDK Build, Test, and Publish
-
+env:
+  GITHUB_TOKEN: ${{ secrets.TOKEN }}
+  GITHUB_ACTOR: ${{ secrets.ACTOR }}
 on:
   push:
     branches: 
-      - main
+      - X
   pull_request:
     branches: 
-      - main
+      - X
 
 jobs:
   build-and-publish:
