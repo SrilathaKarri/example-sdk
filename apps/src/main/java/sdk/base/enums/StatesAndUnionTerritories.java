@@ -4,6 +4,21 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
+/**
+ * Enum representing the states and union territories of India.
+ * Each enum constant corresponds to the name of a state or union territory.
+ * This enum can be used to map a given state name (as a string) to its corresponding enum constant,
+ * and vice versa, as well as to perform operations based on state names.
+ * The state names are represented in a case-insensitive manner.
+ * Example usage:
+ * <pre>
+ *     StatesAndUnionTerritories state = StatesAndUnionTerritories.fromString("Andhra Pradesh");
+ *     System.out.println(state.getState()); // Outputs: Andhra Pradesh
+ * </pre>
+ *
+ * The enum also includes a default value, {@link #UNKNOWN}, for any state that doesn't match the known list.
+ */
+
 @Getter
 public enum StatesAndUnionTerritories {
     ANDHRAPRADESH("Andhra Pradesh"),
@@ -11,7 +26,7 @@ public enum StatesAndUnionTerritories {
     ASSAM("Assam"),
     BIHAR("Bihar"),
     CHATTISGARH("Chattisgarh"),
-    CHHATTISGARH("Chattisgarh"),
+    CHHATTISGARH("Chhattisgarh"),
     GOA("Goa"),
     GUJARAT("Gujarat"),
     HARYANA("Haryana"),
@@ -51,21 +66,19 @@ public enum StatesAndUnionTerritories {
         this.state = state;
     }
 
-    @JsonCreator
-    public static StatesAndUnionTerritories fromString(String state) {
-        for (StatesAndUnionTerritories st : StatesAndUnionTerritories.values()) {
-            if (st.state.equalsIgnoreCase(state)) {  // Case-insensitive comparison
-                return st;
-            }
-        }
-        return UNKNOWN;
-    }
-
     @JsonValue
     public String getState() {
         return state;
     }
 
+    @JsonCreator
+    public static StatesAndUnionTerritories fromString(String value) {
+        for (StatesAndUnionTerritories state : StatesAndUnionTerritories.values()) {
+            if (state.getState().equalsIgnoreCase(value)) {
+                return state;
+            }
+        }
+        throw new IllegalArgumentException("Invalid state: " + value);
+    }
 
 }
-

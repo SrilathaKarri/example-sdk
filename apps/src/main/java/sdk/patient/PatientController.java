@@ -6,10 +6,9 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
-import sdk.base.LogUtil;
-import sdk.base.response.ApiResponse;
-
-import java.util.Optional;
+import sdk.base.utils.LogUtil;
+import sdk.patient.DTO.PatientDTO;
+import sdk.patient.DTO.UpdatePatientDTO;
 
 
 /**
@@ -32,8 +31,9 @@ public class PatientController {
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<Object>> getAllPatients(
+            @RequestParam(required = false) Integer pageNo,
             @RequestParam(required = false) String nextPage) {
-        return patient.findAll(nextPage)
+        return patient.findAll(pageNo,nextPage)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
@@ -46,7 +46,7 @@ public class PatientController {
      */
     @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<Object>> findById(@PathVariable String id) {
-        return patient.getPatientById(id)
+        return patient.findById(id)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
@@ -59,7 +59,7 @@ public class PatientController {
      */
     @GetMapping(value = "/exists/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<Boolean>> checkPatient(@PathVariable String id) {
-        return patient.patientExists(id)
+        return patient.exists(id)
                 .map(ResponseEntity::ok)
                 .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(false)));
     }
@@ -72,8 +72,8 @@ public class PatientController {
      * @return API response with updated patient data
      */
     @PutMapping("/update")
-    public Mono<ApiResponse<Object>> updatePatient(@RequestBody UpdatePatientDTO updatePatientDTO) {
-        return patient.updatePatient(updatePatientDTO);
+    public Mono<Object> updatePatient(@RequestBody UpdatePatientDTO updatePatientDTO) {
+        return patient.update(updatePatientDTO);
     }
 
     /**
@@ -84,11 +84,11 @@ public class PatientController {
      */
     @PostMapping("/create")
     public Mono<ResponseEntity<Object>> createPatient(@Valid @RequestBody PatientDTO patientDTO) {
-        return patient.createPatient(patientDTO)
+        return patient.create(patientDTO)
                 .map(response -> ResponseEntity.ok().body(response))
                 .onErrorResume(e -> {
                     LogUtil.logger.error("Error creating patient", e);
-                    return Mono.just(ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage(), e.toString())));
+                    return Mono.just(ResponseEntity.badRequest().body(e.getMessage()));
                 });
     }
 
@@ -99,12 +99,12 @@ public class PatientController {
      * @return API response confirming deletion
      */
     @DeleteMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<ApiResponse<Object>>> deletePatient(@PathVariable String id) {
-        return patient.deletePatient(id)
+    public Mono<ResponseEntity<Object>> deletePatient(@PathVariable String id) {
+        return patient.delete(id)
                 .map(response -> ResponseEntity.ok().body(response))
-                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(new ApiResponse<>(e.getMessage(),e.toString()))));
+                .onErrorResume(e -> Mono.just(ResponseEntity.badRequest().body(e.getMessage())));
     }
 
 
 
-    }
+}
