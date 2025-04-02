@@ -9,7 +9,7 @@
   <!--  <packaging>jar</packaging>-->
   <groupId>com.srilathakarri</groupId>
   <artifactId>exampl-sdk</artifactId>
-  <version>1.0.-20250328064415-20250401082158</version>
+  <version>1.0.-40500729146572-20250402133446</version>
 
   <distributionManagement>
     <repository>
