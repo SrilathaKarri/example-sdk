@@ -276,7 +276,7 @@
      <id>attach-javadocs</id>
      <goals>
     <goal>jar</goal>
-     </goals>-->
+     </goals>
       </execution>
          </executions>
       </plugin> 
