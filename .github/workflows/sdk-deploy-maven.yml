@@ -25,55 +25,77 @@ jobs:
     #     working-directory: ./javasdk/apps
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
+    - name: Checkout code
+      uses: actions/checkout@v4
+        
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
-
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
-          passphrase: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Create settings.xml for Maven Central
-        run: |
+          
+    - name: Configure GPG Key
+      run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+        
+    - name: Create settings.xml for Maven Central
+      run: |
           mkdir -p $HOME/.m2
-          echo "<settings>
-            <servers>
-              <server>
-                <id>central</id>
-                <username>${{ secrets.SONATYPE_USERNAME }}</username>
-                <password>${{ secrets.SONATYPE_PASSWORD }}</password>
-              </server>
-            </servers>
-          </settings>" > $HOME/.m2/settings.xml
-
-      - name: Build with Maven
-        run: mvn -B clean compile
-
-      - name: Run tests
-        run: mvn -B test
-
-      - name: Package, Sign and Publish to Maven Central
-        run: mvn -B deploy -DskipTests
-        env:
+          cat > $HOME/.m2/settings.xml << EOF
+          <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 
+                                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+              <servers>
+                  <server>
+                      <id>central</id>
+                      <username>${{ secrets.SONATYPE_USERNAME }}</username>
+                      <password>${{ secrets.SONATYPE_PASSWORD }}</password>
+                  </server>
+              </servers>
+              <profiles>
+                  <profile>
+                      <id>gpg</id>
+                      <properties>
+                          <gpg.executable>gpg</gpg.executable>
+                          <gpg.passphrase>${{ secrets.GPG_PASSPHRASE }}</gpg.passphrase>
+                      </properties>
+                  </profile>
+              </profiles>
+              <activeProfiles>
+                  <activeProfile>gpg</activeProfile>
+              </activeProfiles>
+          </settings>
+          EOF
+          
+    - name: Build with Maven
+      run: mvn -B clean compile
+        
+    - name: Run tests
+      run: mvn -B test
+        
+    - name: Package, Sign and Publish to Maven Central
+      run: mvn -B deploy -DskipTests -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+      env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-
-      - name: Auto-publish to Maven Central
-        run: |
+          
+    - name: Auto-publish to Maven Central
+      run: |
+          # Install jq if not already available
+          if ! command -v jq &> /dev/null; then
+              sudo apt-get update
+              sudo apt-get install -y jq
+          fi
+          
           DEPLOYMENT_ID=$(curl -s -X GET -u ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} \
             "https://central.sonatype.com/api/v1/publisher/deployment?filter=status:VALIDATION_PASSED" | \
             jq -r '.items[0].id')
           
           if [ -n "$DEPLOYMENT_ID" ] && [ "$DEPLOYMENT_ID" != "null" ]; then
+            echo "Found deployment ID: $DEPLOYMENT_ID. Publishing to Maven Central..."
             curl -X POST -u ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} \
               "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID/publish"
             echo "Automatically published deployment ID: $DEPLOYMENT_ID"
