@@ -125,7 +125,7 @@ public class Validation extends Base {
         return fetchData(url, new ParameterizedTypeReference<>() {});
     }
 
-    public Mono<reactor.util.function.Tuple3<String, String, String>> fetchAndPromptLocation() {
+    public Mono<Tuple3<String, String, String>> fetchAndPromptLocation() {
         return promptForValidLocation()
                 .flatMap(this::fetchLatitudeLongitude)
                 .doOnSuccess(latLong -> System.out.printf(
@@ -153,7 +153,7 @@ public class Validation extends Base {
                                 ErrorType.NOT_FOUND));
                     }
 
-                    var locationData = response.getResults().getFirst().getGeometry().getLocation();
+                    var locationData = response.getResults().get(0).getGeometry().getLocation();
                     return Mono.just(reactor.util.function.Tuples.of(
                             String.valueOf(locationData.getLat()),
                             String.valueOf(locationData.getLng()),
