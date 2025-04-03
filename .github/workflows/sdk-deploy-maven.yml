@@ -1,110 +1,59 @@
-name: Publish SDK to Maven Central
-env:
-  SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-  SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+name: Build and Release
 
 on:
   push:
-    branches: 
+    branches:
       - main
-  pull_request:
-    branches: 
-      - main
+    tags:
+      - 'v*.*.*'
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./apps
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: '21'
-        distribution: 'temurin'
-        cache: maven
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'adopt'
 
-    - name: Setup GPG Key
-      run: |
-        mkdir -p ~/.gnupg
-        echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
-        gpg --list-secret-keys --keyid-format LONG
-        echo "use-agent" >> ~/.gnupg/gpg.conf
-        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
-        chmod 700 ~/.gnupg
-        export GNUPGHOME=~/.gnupg
+      - name: Setup GPG Key
+        run: |
+          # Ensure the .gnupg directory exists with correct permissions
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
 
-    - name: Build and Sign with Maven
-      run: |
-        export GPG_TTY=$(tty)
-        mvn clean install -Dgpg.executable=gpg -Dgpg.keyname=BCFBE978045CC9F0 -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests
+          # Import the GPG key from GitHub Secrets
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
 
-    
+          # Configure GPG for non-interactive usage
+          echo "use-agent" >> ~/.gnupg/gpg.conf
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
 
+          # Set environment variables
+          export GNUPGHOME=~/.gnupg
+          export GPG_TTY=$(tty)
 
-
-    - name: Create settings.xml for Maven Central
-      run: |
-        mkdir -p $HOME/.m2
-        cat > $HOME/.m2/settings.xml << EOF
-        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
-                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
-          <servers>
-            <server>
-              <id>central</id>
-              <username>${{ secrets.SONATYPE_USERNAME }}</username>
-              <password>${{ secrets.SONATYPE_PASSWORD }}</password>
-            </server>
-          </servers>
-          <profiles>
-            <profile>
-              <id>gpg</id>
-              <properties>
-                <gpg.executable>gpg</gpg.executable>
-                <gpg.passphrase>${{ secrets.GPG_PASSPHRASE }}</gpg.passphrase>
-              </properties>
-            </profile>
-          </profiles>
-          <activeProfiles>
-            <activeProfile>gpg</activeProfile>
-          </activeProfiles>
-        </settings>
-        EOF
-
-    - name: Build with Maven
-      run: mvn -B clean compile
-
-    - name: Run tests
-      run: mvn -B test
-
-    - name: Package, Sign, and Publish to Maven Central
-      run: |
-        export GPG_TTY=$(tty)
-        mvn -B deploy -DskipTests \
-          -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" \
-          -Dgpg.keyname="${{ secrets.GPG_KEY_ID }}" \
-          -Dgpg.homedir=~/.gnupg \
-          -X
+          # Verify the GPG key import
+          gpg --list-secret-keys --keyid-format LONG
           
-    - name: Auto-publish to Maven Central
-      run: |
-        sudo apt-get install -y jq
-        DEPLOYMENT_ID=$(curl -s -X GET -u ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} \
-          "https://central.sonatype.com/api/v1/publisher/deployment?filter=status:VALIDATION_PASSED" | \
-          jq -r '.items[0].id')
+      - name: Build and Sign with Maven
+        env:
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          # Build and sign the project
+          mvn clean install \
+            -Dgpg.executable=gpg \
+            -Dgpg.keyname=BCFBE978045CC9F0 \
+            -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" \
+            -Dgpg.hom=~/.gnupg \
+            -DskipTests
 
-        if [ -n "$DEPLOYMENT_ID" ] && [ "$DEPLOYMENT_ID" != "null" ]; then
-          curl -X POST -u ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} \
-            "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID/publish"
-          echo "Published deployment ID: $DEPLOYMENT_ID"
-        else
-          echo "No valid deployment found to publish"
-          exit 1
-        fi
+      - name: Publish to Maven Central
+        run: |
+          mvn deploy -Dgpg.passphrase="${{ secrets.GPG_PASSPHRASE }}" -DskipTests
