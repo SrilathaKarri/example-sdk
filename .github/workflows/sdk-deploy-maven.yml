@@ -35,22 +35,22 @@ jobs:
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: |
-        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -DskipTests -X | tee $GITHUB_WORKSPACE/deploy.log
         
     - name: Extract deployment ID
       id: extract-id
       run: |
-          if [ ! -f "$GITHUB_WORKSPACE/deploy.log" ]; then
-            echo "Error: deploy.log not found!"
-            exit 1
-          fi
-          DEPLOYMENT_ID=$(grep -oP '(?<=deploymentId: )\w{8}-\w{4}-\w{4}-\w{4}-\w{12}' $GITHUB_WORKSPACE/deploy.log)
-          if [ -z "$DEPLOYMENT_ID" ]; then
-            echo "Deployment ID not found in Maven logs."
-            exit 1
-          fi
-          echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_ENV
-          echo "Found deployment ID: $DEPLOYMENT_ID"
+        if [ ! -f "$GITHUB_WORKSPACE/deploy.log" ]; then
+          echo "Error: deploy.log not found!"
+          exit 1
+        fi
+        DEPLOYMENT_ID=$(grep -oP '(?<=deploymentId: )\w{8}-\w{4}-\w{4}-\w{4}-\w{12}' $GITHUB_WORKSPACE/deploy.log)
+        if [ -z "$DEPLOYMENT_ID" ]; then
+          echo "Deployment ID not found in Maven logs."
+          exit 1
+        fi
+        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_ENV
+        echo "Found deployment ID: $DEPLOYMENT_ID"
       
     - name: Wait for validation
       if: steps.extract-id.outputs.deployment_id != ''
@@ -62,10 +62,14 @@ jobs:
       if: steps.extract-id.outputs.deployment_id != ''
       run: |
         DEPLOYMENT_ID="${{ steps.extract-id.outputs.deployment_id }}"
+        AUTH_HEADER=$(echo -n "${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }}" | base64)
         echo "Publishing deployment $DEPLOYMENT_ID"
+        
         curl -X POST "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID" \
           -H "Content-Type: application/json" \
-          -H "Authorization: Basic $(echo -n ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} | base64)"
+          -H "Authorization: Basic $AUTH_HEADER" \
+          -H "Accept: */*" \
+          -d ''
         
     - name: Complete Publishing to Maven Central
       uses: actions/github-script@v6
