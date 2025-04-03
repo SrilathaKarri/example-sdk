@@ -1,9 +1,7 @@
 name: Publish SDK to Maven Central
-
 on:
   push:
     branches: [ main ]
-
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -30,19 +28,45 @@ jobs:
         mkdir -p ~/.m2
         cp .github/workflows/settings.xml ~/.m2/
         
-    - name: Build and publish to Maven Central
+    - name: Build and deploy to Maven Central
       working-directory: ./apps
       env:
         MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: |
-        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -P release
+        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+        
+    - name: Extract deployment ID
+      id: extract-id
+      run: |
+        LOGS=$(cat $GITHUB_WORKSPACE/apps/target/deploy.log 2>/dev/null || echo "")
+        DEPLOYMENT_ID=$(echo "$LOGS" | grep -o 'deploymentId: [a-zA-Z0-9-]*' | cut -d ' ' -f 2)
+        if [ -z "$DEPLOYMENT_ID" ]; then
+          DEPLOYMENT_ID=$(grep -o 'deploymentId: [a-zA-Z0-9-]*' $GITHUB_WORKSPACE/apps/target/maven-deploy.log 2>/dev/null | cut -d ' ' -f 2 || echo "")
+        fi
+        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+        echo "Found deployment ID: $DEPLOYMENT_ID"
+      
+    - name: Wait for validation
+      if: steps.extract-id.outputs.deployment_id != ''
+      run: |
+        echo "Waiting for deployment validation..."
+        sleep 60  # Give some time for validation to complete
+        
+    - name: Publish deployment
+      if: steps.extract-id.outputs.deployment_id != ''
+      run: |
+        DEPLOYMENT_ID="${{ steps.extract-id.outputs.deployment_id }}"
+        echo "Publishing deployment $DEPLOYMENT_ID"
+        curl -X POST "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Basic $(echo -n ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} | base64)"
         
     - name: Complete Publishing to Maven Central
       uses: actions/github-script@v6
       with:
         script: |
           const url = "https://central.sonatype.com/publishing/deployments";
-          console.log(`Publishing completed. Visit ${url} to finalize the deployment if required.`);
-          core.notice(`Publishing completed. Visit ${url} to finalize the deployment if required.`);
+          console.log(`Publishing completed. Visit ${url} to verify the deployment was successful.`);
+          core.notice(`Publishing completed. Visit ${url} to verify the deployment was successful.`);
