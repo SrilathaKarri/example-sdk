@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
+<!-- Github Packages Pom -->
+<!-- <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
@@ -277,7 +278,7 @@
       <!--            </goals>-->
       <!--          </execution>-->
       <!--        </executions>-->
-      <!--      </plugin>-->
+      <!--      </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -292,5 +293,347 @@
     </plugins>
 
 
+  </build>
+</project>
+ --> -->
+
+<!-- Maven central pom -->
+             
+   <project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+<!--  <groupId>sdk</groupId>-->
+<!--  <artifactId>apps</artifactId>-->
+<!--  <version>1.0-SNAPSHOT</version>-->
+<!--  <packaging>jar</packaging>-->
+  <groupId>io.github.psaisandeep333</groupId>
+  <artifactId>test-sdk</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>Test SDK</name>
+  <description>A application for patient operations</description>
+  <url>http://www.example.com/example-application</url>
+
+  <licenses>
+    <license>
+      <name>MIT License</name>
+      <url>http://www.opensource.org/licenses/mit-license.php</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Srilatha Karri</name>
+      <email>karrisrilatha3@gmail.com</email>
+      <organization>Achala</organization>
+      <organizationUrl>http://www.achala.com</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/psaisandeep333.eplnipsbfa.git</connection>
+    <developerConnection>scm:git:ssh://github.com:psaisandeep333.eplnipsbfa.git</developerConnection>
+    <url>http://github.com/psaisandeep333.eplnipsbfa</url>
+  </scm>
+
+
+  <properties>
+    <java.version>21</java.version>
+    <spring-boot.version>3.2.5</spring-boot.version>
+    <spring-boot-test.version>5.3.19</spring-boot-test.version>
+    <jackson.version>2.16.0</jackson.version>
+    <lombok.version>1.18.36</lombok.version>
+    <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
+    <mockito.version>5.11.0</mockito.version>
+    <caffeine.version>3.1.8</caffeine.version>
+    <reactor-test.version>3.6.0</reactor-test.version>
+    <assertj.version>3.26.0</assertj.version>
+    <maven-checkstyle.version>3.1.2</maven-checkstyle.version>
+    <maven-pmd.version>3.14.0</maven-pmd.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+    <mapstruct.version>1.5.2.Final</mapstruct.version>
+  </properties>
+
+  <dependencies>
+    <!-- Spring Boot WebFlux -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-webflux</artifactId>
+      <version>${spring-boot.version}</version>
+    </dependency>
+
+    <!-- Jackson (Serialization/Deserialization) -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+
+    <!-- Lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+      <version>${lombok.version}</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- Java Validation (Jakarta instead of old javax) -->
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate-validator.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.validation</groupId>
+      <artifactId>jakarta.validation-api</artifactId>
+      <version>3.0.2</version>
+    </dependency>
+
+    <!-- Caffeine Cache -->
+    <dependency>
+      <groupId>com.github.ben-manes.caffeine</groupId>
+      <artifactId>caffeine</artifactId>
+      <version>${caffeine.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-cache</artifactId>
+      <version>${spring-boot.version}</version>
+    </dependency>
+
+    <!-- Testing Dependencies -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>${assertj.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-test</artifactId>
+      <version>${reactor-test.version}</version>
+      <scope>compile</scope>
+    </dependency>
+      <dependency>
+          <groupId>org.jetbrains</groupId>
+          <artifactId>annotations</artifactId>
+          <version>24.0.1</version>
+          <scope>compile</scope>
+      </dependency>
+
+    <!-- mapstruct processor -->
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+
+    <!-- MapStruct processor for code generation -->
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>2.0.1.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <version>5.11.4</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <version>5.11.4</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Mockito for JUnit 5 -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <!-- Spring Test -->
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-test</artifactId>
+      <version>${spring-boot-test.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>io.projectreactor</groupId>
+      <artifactId>reactor-core</artifactId>
+      <version>3.7.2</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+<!--      &lt;!&ndash; Compiler Plugin &ndash;&gt;-->
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-compiler-plugin</artifactId>-->
+<!--        <version>3.10.1</version>  &lt;!&ndash; Ensure you're using a compatible plugin version &ndash;&gt;-->
+<!--        <configuration>-->
+<!--          <source>17</source>  &lt;!&ndash; Update to Java 17 &ndash;&gt;-->
+<!--          <target>17</target>  &lt;!&ndash; Update to Java 17 &ndash;&gt;-->
+<!--          <compilerArgs>-->
+<!--            <arg>-parameters</arg>-->
+<!--          </compilerArgs>-->
+<!--        </configuration>-->
+<!--      </plugin>-->
+
+      <!-- Checkstyle Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${maven-checkstyle.version}</version>
+        <configuration>
+          <configLocation>checkstyle.xml</configLocation>
+          <failOnViolation>true</failOnViolation>
+        </configuration>
+      </plugin>
+
+      <!-- PMD Plugin -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>${maven-pmd.version}</version>
+        <configuration>
+          <rulesets>
+            <ruleset>rulesets/java/basic.xml</ruleset>
+          </rulesets>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.5.0</version>
+        <extensions>true</extensions>
+<!--        <configuration>-->
+<!--          <publishingServerId>true</publishingServerId>-->
+<!--        </configuration>-->
+      </plugin>
+
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+        <version>2.2.1</version>
+        <executions>
+          <execution>
+            <id>attach-sources</id>
+            <goals>
+              <goal>jar-no-fork</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+<!--      <plugin>-->
+<!--        <groupId>org.apache.maven.plugins</groupId>-->
+<!--        <artifactId>maven-javadoc-plugin</artifactId>-->
+<!--        <version>3.3.0</version>-->
+<!--        <executions>-->
+<!--          <execution>-->
+<!--            <id>attach-javadocs</id>-->
+<!--            <goals>-->
+<!--              <goal>jar</goal>-->
+<!--            </goals>-->
+<!--          </execution>-->
+<!--        </executions>-->
+<!--      </plugin>-->
+
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.3.0</version>
+        <configuration>
+          <doclint>none</doclint>
+          <failOnError>false</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+        <version>3.1.2</version>
+        <configuration>
+          <retryFailedDeploymentCount>2</retryFailedDeploymentCount>
+        </configuration>
+      </plugin>
+
+    </plugins>
   </build>
 </project>
