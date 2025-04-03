@@ -1,4 +1,7 @@
 name: Publish SDK to Maven Central
+env:
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+  SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
 
 # on:
 #   push:
@@ -17,142 +20,64 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./javasdk/apps
+    # defaults:
+    #   run:
+    #     working-directory: ./javasdk/apps
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           cache: maven
 
       - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v5
+        uses: crazy-max/ghaction-import-gpg@v6
         with:
           gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
 
-      - name: Distribute GPG key
+      - name: Create settings.xml for Maven Central
         run: |
-          gpg --keyserver keyserver.ubuntu.com --send-keys ${{ steps.import_gpg.outputs.keyid }}
+          mkdir -p $HOME/.m2
+          echo "<settings>
+            <servers>
+              <server>
+                <id>central</id>
+                <username>${{ secrets.SONATYPE_USERNAME }}</username>
+                <password>${{ secrets.SONATYPE_PASSWORD }}</password>
+              </server>
+            </servers>
+          </settings>" > $HOME/.m2/settings.xml
 
       - name: Build with Maven
-        run: mvn clean package -DskipTests --batch-mode
+        run: mvn -B clean compile
 
-      - name: Run Tests
-        run: mvn test --batch-mode
+      - name: Run tests
+        run: mvn -B test
 
-      - name: Generate Sources JAR
-        run: mvn source:jar-no-fork --batch-mode
-
-      - name: Generate JavaDoc JAR
-        run: mvn javadoc:jar --batch-mode
-
-      - name: Sign artifacts with GPG
-        run: |
-          mvn gpg:sign -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} --batch-mode
-
-      - name: Set up Maven Central Repository
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          server-id: central
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
-
-      - name: Install to local Maven repository
-        run: mvn install -DskipTests --batch-mode
-
-      - name: Publish to Maven Central
-        run: |
-          mvn deploy -DskipTests --batch-mode -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+      - name: Package, Sign and Publish to Maven Central
+        run: mvn -B deploy -DskipTests
         env:
           MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-          
-      - name: Auto-approve and release deployment on Central
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+
+      - name: Auto-publish to Maven Central
         run: |
-          # Install necessary tools
-          pip install requests
-
-          # Script to auto-approve and release the deployment
-          cat > approve_deployment.py << 'EOF'
-          import requests
-          import os
-          import time
-          import sys
-          import json
-
-          # Get credentials
-          username = os.environ.get("SONATYPE_USERNAME")
-          password = os.environ.get("SONATYPE_PASSWORD")
-          base_url = "https://central.sonatype.com/api/v1"
-
-          # Authenticate
-          auth = (username, password)
-
-          # Poll for deployments until we find the one we want
-          max_attempts = 15
-          wait_seconds = 20
+          DEPLOYMENT_ID=$(curl -s -X GET -u ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} \
+            "https://central.sonatype.com/api/v1/publisher/deployment?filter=status:VALIDATION_PASSED" | \
+            jq -r '.items[0].id')
           
-          print("Checking for new deployments...")
-          
-          for attempt in range(max_attempts):
-              try:
-                  # Get list of deployments
-                  deployments_url = f"{base_url}/deployments"
-                  response = requests.get(deployments_url, auth=auth)
-                  response.raise_for_status()
-                  
-                  deployments = response.json()
-                  
-                  # Look for the most recent deployment that needs approval
-                  for deployment in deployments:
-                      if deployment["state"] == "IN_PROGRESS" or deployment["state"] == "VALIDATING":
-                          deployment_id = deployment["id"]
-                          print(f"Found deployment {deployment_id} in state {deployment['state']}")
-                          
-                          # Wait until validation is complete
-                          if deployment["state"] == "VALIDATING":
-                              print(f"Waiting for validation to complete...")
-                              time.sleep(wait_seconds)
-                              continue
-                          
-                          # Publish the deployment
-                          publish_url = f"{base_url}/deployments/{deployment_id}/publish"
-                          print(f"Publishing deployment {deployment_id}...")
-                          publish_response = requests.post(publish_url, auth=auth)
-                          publish_response.raise_for_status()
-                          
-                          print(f"Successfully published deployment {deployment_id}")
-                          sys.exit(0)
-              
-                  print(f"No deployments ready for publishing found, waiting {wait_seconds} seconds...")
-                  time.sleep(wait_seconds)
-              
-              except Exception as e:
-                  print(f"Error: {str(e)}")
-                  time.sleep(wait_seconds)
-          
-          print("Timed out waiting for deployment to be ready")
-          sys.exit(1)
-          EOF
-
-          # Run the script
-          python approve_deployment.py
-        env:
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-
-      - name: Deployment Summary
-        run: |
-          echo "✅ SDK published successfully to Maven Central."
-          echo "Artifact: io.github.psaisandeep333:test-sdk:1.0.0"
-          echo "It may take a few hours for the artifacts to appear in the central repository."
+          if [ -n "$DEPLOYMENT_ID" ] && [ "$DEPLOYMENT_ID" != "null" ]; then
+            curl -X POST -u ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} \
+              "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID/publish"
+            echo "Automatically published deployment ID: $DEPLOYMENT_ID"
+          else
+            echo "No valid deployment found to publish"
+            exit 1
+          fi
