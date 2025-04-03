@@ -20,9 +20,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # defaults:
-    #   run:
-    #     working-directory: ./javasdk/apps
+    defaults:
+      run:
+        working-directory: ./apps  # Set the working directory to where your pom.xml is
 
     steps:
     - name: Checkout code
