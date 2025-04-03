@@ -50,14 +50,16 @@ jobs:
           exit 1
         fi
         echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_ENV
+        echo "::set-output name=deployment_id::$DEPLOYMENT_ID"  # Set as output
         echo "Found deployment ID: $DEPLOYMENT_ID"
+
       
     - name: Wait for validation
       if: steps.extract-id.outputs.deployment_id != ''
       run: |
         echo "Waiting for deployment validation..."
         sleep 60  # Give some time for validation to complete
-        
+
     - name: Publish deployment
       if: steps.extract-id.outputs.deployment_id != ''
       run: |
@@ -70,6 +72,7 @@ jobs:
           -H "Authorization: Basic $AUTH_HEADER" \
           -H "Accept: */*" \
           -d ''
+
         
     - name: Complete Publishing to Maven Central
       uses: actions/github-script@v6
