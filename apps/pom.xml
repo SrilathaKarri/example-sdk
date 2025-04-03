@@ -67,14 +67,14 @@
   </properties>
 
   <dependencies>
-    <!-- Spring Boot WebFlux -->
+    Spring Boot WebFlux 
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webflux</artifactId>
       <version>${spring-boot.version}</version>
     </dependency>
 
-    <!-- Jackson (Serialization/Deserialization) -->
+   Jackson (Serialization/Deserialization)
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
@@ -91,7 +91,7 @@
       <version>${jackson.version}</version>
     </dependency>
 
-    <!-- Lombok -->
+   Lombok
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -100,7 +100,7 @@
       <optional>true</optional>
     </dependency>
 
-    <!-- Java Validation (Jakarta instead of old javax) -->
+    Java Validation (Jakarta instead of old javax)
     <dependency>
       <groupId>org.hibernate.validator</groupId>
       <artifactId>hibernate-validator</artifactId>
@@ -112,7 +112,7 @@
       <version>3.0.0</version>
     </dependency>
 
-    <!-- Caffeine Cache -->
+    Caffeine Cache
     <dependency>
       <groupId>com.github.ben-manes.caffeine</groupId>
       <artifactId>caffeine</artifactId>
@@ -124,7 +124,7 @@
       <version>${spring-boot.version}</version>
     </dependency>
 
-    <!-- Testing Dependencies -->
+    Testing Dependencies
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -156,7 +156,7 @@
       <scope>compile</scope>
     </dependency>
 
-    <!-- Spring Test -->
+    Spring Test
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-test</artifactId>
@@ -164,14 +164,14 @@
       <scope>apps</scope>
     </dependency>
 
-    <!-- mapstruct processor -->
+    mapstruct processor
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct</artifactId>
       <version>${mapstruct.version}</version>
     </dependency>
 
-    <!-- MapStruct processor for code generation -->
+    MapStruct processor for code generation
     <dependency>
       <groupId>org.mapstruct</groupId>
       <artifactId>mapstruct-processor</artifactId>
@@ -179,7 +179,7 @@
       <scope>provided</scope>
     </dependency>
 
-    <!-- Mockito for JUnit 5 -->
+    Mockito for JUnit 5
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-junit-jupiter</artifactId>
@@ -217,7 +217,7 @@
 
   <build>
     <plugins>
-      <!-- Compiler Plugin -->
+      Compiler Plugin
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -230,7 +230,7 @@
         </configuration>
       </plugin>
 
-      <!-- Checkstyle Plugin -->
+      Checkstyle Plugin
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
@@ -241,7 +241,7 @@
         </configuration>
       </plugin>
 
-      <!-- PMD Plugin -->
+      PMD Plugin
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
@@ -305,10 +305,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-<!--  <groupId>sdk</groupId>-->
-<!--  <artifactId>apps</artifactId>-->
-<!--  <version>1.0-SNAPSHOT</version>-->
-<!--  <packaging>jar</packaging>-->
   <groupId>io.github.psaisandeep333</groupId>
   <artifactId>test-sdk</artifactId>
   <version>1.0.0</version>
