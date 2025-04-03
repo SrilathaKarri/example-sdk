@@ -30,16 +30,14 @@ jobs:
           
     - name: Configure GPG Key
       run: |
-        # Import the GPG key
-        echo "${{ secrets.GPG_PRIVATE_KEY }}" | base64 --decode | gpg --batch --import
-        # Trust the key
-        echo -n "${{ secrets.GPG_KEY_ID }}:6:" | gpg --import-ownertrust
-        # Configure GPG for CI environment
-        mkdir -p ~/.gnupg
-        echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
-        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-        chmod 700 ~/.gnupg
+        echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
         gpg --list-secret-keys --keyid-format LONG
+        mkdir -p ~/.gnupg
+        echo "use-agent" > ~/.gnupg/gpg.conf
+        echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+        chmod 700 ~/.gnupg
+
         
     - name: Create settings.xml for Maven Central
       run: |
@@ -86,7 +84,12 @@ jobs:
         
     - name: Package, Sign and Publish to Maven Central
       run: |
-        mvn -B clean deploy -DskipTests -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+        export GPG_TTY=$(tty)
+        mvn -B deploy \
+            -DskipTests \
+            -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} \
+            -Dgpg.keyname=${{ secrets.GPG_KEY_ID }} \
+            -Dgpg.useAgent=false
       env:
         MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
