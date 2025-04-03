@@ -31,7 +31,7 @@ jobs:
         cp .github/workflows/settings.xml ~/.m2/
         
     - name: Build and deploy to Maven Central
-      working-directory: ./apps
+      working-directory: ./javasdk/apps
       env:
         MAVEN_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
