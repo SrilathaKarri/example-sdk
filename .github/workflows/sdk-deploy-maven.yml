@@ -1,33 +1,35 @@
 name: Publish SDK to Maven Central
+
 on:
   push:
     branches: [ main ]
+
 jobs:
   publish:
     runs-on: ubuntu-latest
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up JDK 17
       uses: actions/setup-java@v3
       with:
         java-version: '17'
         distribution: 'temurin'
         cache: 'maven'
-        
+
     - name: Import GPG key
       uses: crazy-max/ghaction-import-gpg@v6
       with:
         gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
         passphrase: ${{ secrets.GPG_PASSPHRASE }}
-        
+
     - name: Setup Maven settings.xml
       run: |
         mkdir -p ~/.m2
         cp .github/workflows/settings.xml ~/.m2/
-        
+
     - name: Build and deploy to Maven Central
       working-directory: ./apps
       env:
@@ -35,34 +37,35 @@ jobs:
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: |
-        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
-        
+        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -DskipTests > deploy.log 2>&1
+        echo "Maven deployment logs saved to deploy.log"
+
     - name: Extract deployment ID
       id: extract-id
       run: |
-        LOGS=$(cat $GITHUB_WORKSPACE/apps/target/deploy.log 2>/dev/null || echo "")
-        DEPLOYMENT_ID=$(echo "$LOGS" | grep -o 'deploymentId: [a-zA-Z0-9-]*' | cut -d ' ' -f 2)
+        DEPLOYMENT_ID=$(grep -oP '(?<=deploymentId: )\w{8}-\w{4}-\w{4}-\w{4}-\w{12}' deploy.log)
         if [ -z "$DEPLOYMENT_ID" ]; then
-          DEPLOYMENT_ID=$(grep -o 'deploymentId: [a-zA-Z0-9-]*' $GITHUB_WORKSPACE/apps/target/maven-deploy.log 2>/dev/null | cut -d ' ' -f 2 || echo "")
+          echo "Deployment ID not found in Maven logs."
+          exit 1
         fi
-        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_OUTPUT
+        echo "deployment_id=$DEPLOYMENT_ID" >> $GITHUB_ENV
         echo "Found deployment ID: $DEPLOYMENT_ID"
-      
+
     - name: Wait for validation
-      if: steps.extract-id.outputs.deployment_id != ''
+      if: env.deployment_id != ''
       run: |
         echo "Waiting for deployment validation..."
-        sleep 60  # Give some time for validation to complete
-        
+        sleep 60  # Wait time for validation (adjust if needed)
+
     - name: Publish deployment
-      if: steps.extract-id.outputs.deployment_id != ''
+      if: env.deployment_id != ''
       run: |
-        DEPLOYMENT_ID="${{ steps.extract-id.outputs.deployment_id }}"
+        DEPLOYMENT_ID="${{ env.deployment_id }}"
         echo "Publishing deployment $DEPLOYMENT_ID"
         curl -X POST "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID" \
           -H "Content-Type: application/json" \
           -H "Authorization: Basic $(echo -n ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} | base64)"
-        
+
     - name: Complete Publishing to Maven Central
       uses: actions/github-script@v6
       with:
