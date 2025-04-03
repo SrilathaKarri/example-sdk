@@ -35,8 +35,9 @@ jobs:
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: |
-         mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -DskipTests > $GITHUB_WORKSPACE/deploy.log 2>&1
+         mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -DskipTests -X > $GITHUB_WORKSPACE/deploy.log 2>&1
           echo "Maven deployment logs saved to deploy.log"
+          cat $GITHUB_WORKSPACE/deploy.log  # Display the log for debugging
         
     - name: Extract deployment ID
       id: extract-id
