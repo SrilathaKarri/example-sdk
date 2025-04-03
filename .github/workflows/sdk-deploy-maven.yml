@@ -31,12 +31,15 @@ jobs:
 
     - name: Configure GPG Key
       run: |
+        mkdir -p ~/.gnupg
         echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
         gpg --list-secret-keys --keyid-format LONG
-        echo "use-agent" > ~/.gnupg/gpg.conf
+        export GNUPG_HOME=~/.gnupg
+        echo "use-agent" >> ~/.gnupg/gpg.conf
         echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
-        echo "allow-loopback-pinentry" > ~/.gnupg/gpg-agent.conf
+        echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
         chmod 700 ~/.gnupg
+
 
     - name: Create settings.xml for Maven Central
       run: |
