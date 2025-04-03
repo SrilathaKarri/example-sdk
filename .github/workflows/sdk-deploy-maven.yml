@@ -35,9 +35,7 @@ jobs:
         MAVEN_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
       run: |
-         mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }} -DskipTests -X > $GITHUB_WORKSPACE/deploy.log 2>&1
-          echo "Maven deployment logs saved to deploy.log"
-          cat $GITHUB_WORKSPACE/deploy.log  # Display the log for debugging
+        mvn clean deploy -B -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
         
     - name: Extract deployment ID
       id: extract-id
@@ -65,26 +63,9 @@ jobs:
       run: |
         DEPLOYMENT_ID="${{ steps.extract-id.outputs.deployment_id }}"
         echo "Publishing deployment $DEPLOYMENT_ID"
-
-        # Encode credentials correctly
-        AUTH=$(echo -n "${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }}" | base64)
-
-        # Publish the deployment
-        RESPONSE=$(curl -s -w "%{http_code}" -o response.json -X POST "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID" \
+        curl -X POST "https://central.sonatype.com/api/v1/publisher/deployment/$DEPLOYMENT_ID" \
           -H "Content-Type: application/json" \
-          -H "Accept: application/json" \
-          -H "Authorization: Basic $AUTH")
-    
-        echo "Response Code: $RESPONSE"
-        cat response.json
-    
-        if [ "$RESPONSE" -ge 200 ] && [ "$RESPONSE" -lt 300 ]; then
-          echo "Deployment published successfully!"
-        else
-          echo "Error publishing deployment. Check response above."
-          exit 1
-        fi
-
+          -H "Authorization: Basic $(echo -n ${{ secrets.SONATYPE_USERNAME }}:${{ secrets.SONATYPE_PASSWORD }} | base64)"
         
     - name: Complete Publishing to Maven Central
       uses: actions/github-script@v6
